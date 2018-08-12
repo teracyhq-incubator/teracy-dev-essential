@@ -11,7 +11,11 @@ Configure `workspace/teracy-dev-entry/config_default.yaml` with the following si
 teracy-dev:
   extensions:
     - _id: "entry-0"
-      path: teracy-dev-essential
+      path:
+        extension: teracy-dev-essential
+      location:
+        git: https://github.com/hoatle/teracy-dev-essential.git
+        branch: develop
       require_version: ">= 0.1.0-SNAPSHOT"
       enabled: true
 ```

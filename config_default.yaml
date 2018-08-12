@@ -29,6 +29,3 @@ vagrant:
         enabled: true
         manage_host: true
         manage_guest: true
-
-teracy-dev-essential:
-
