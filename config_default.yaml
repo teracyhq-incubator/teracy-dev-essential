@@ -8,7 +8,7 @@ vagrant:
       name: vagrant-gatling-rsync
       version: "" # empty means latest by default
       state: installed # uninstalled
-      enabled: true
+      enabled: false
       config_key: gatling
       options:
         latency: 0.5
@@ -18,13 +18,13 @@ vagrant:
       name: vagrant-rsync-back
       version: ""
       state: installed
-      enabled: true
+      enabled: false
     - _id: "essential-2"
       name: vagrant-hostmanager
       version: ""
       state: installed
       config_key: hostmanager
-      enabled: true
+      enabled: false
       options:
         enabled: true
         manage_host: true
