@@ -4,39 +4,42 @@ require 'teracy-dev/plugin'
 module TeracyDevEssential
   module Config
     class HostManager < TeracyDev::Config::Configurator
+      PLUGIN_NAME = "vagrant-hostmanager"
 
-      def configure(settings, config, type:)
-        case type
-        when 'common'
-          plugins_settings = settings['vagrant']['plugins']
-        when 'node'
-          # ignore
-          return
-        end
-        plugins_settings ||= []
-        @logger.debug("configure #{type}: #{plugins_settings}")
-
-        plugins_settings.each do |plugin|
-
-          next if !can_proceed?(plugin)
-
-          if plugin.key?('config_key')
-            config_key = plugin['config_key']
-            options = plugin['options']
-            if config_key == "hostmanager"
-              configure_hostmanager(options, config)
-              break
-            end
-          end
-        end
+      def configure_common(settings, config)
+        @plugins = settings['vagrant']['plugins'] ||= []
+        configure_hostmanager(config) if can_proceed?(@plugins, PLUGIN_NAME)
       end
 
+      def configure_node(settings, config)
+        return if !can_proceed?(@plugins, PLUGIN_NAME)
+        # guest hosts fixer
+        hostname = settings['vm']['hostname']
+        return if hostname.nil? || hostname.empty?
+        fix_hosts_command = "sed -i \"s/\\(127.0.1.1\\)\\(.*\\)#{hostname}\\(.*\\)/\\1\\3/\" /etc/hosts"
+        @logger.debug("fix_hosts_command: #{fix_hosts_command}")
+
+        options = {
+          "inline" => fix_hosts_command
+        }
+
+        config.vm.provision "guest-hosts-fixer", type: "shell" do |provision|
+          provision.set_options(options)
+        end
+
+      end
 
       private
 
       # check if plugin is installed and enabled to proceed
-      def can_proceed?(plugin)
-          plugin_name = plugin['name']
+      def can_proceed?(plugins, plugin_name)
+
+          plugins = plugins.select do |plugin|
+            plugin['name'] == plugin_name
+          end
+
+          return false if plugins.length != 1
+          plugin = plugins[0]
 
           if !TeracyDev::Plugin.installed?(plugin_name)
             @logger.warn("#{plugin_name} is not installed")
@@ -51,8 +54,7 @@ module TeracyDevEssential
       end
 
 
-      def configure_hostmanager(options, config)
-        @logger.debug("configure_hostmanager: #{options}")
+      def configure_hostmanager(config)
         # conflict potential
         if TeracyDev::Plugin.installed?('vagrant-hostsupdater')
           @logger.warn('conflict potential, recommended: $ vagrant plugin uninstall vagrant-hostsupdater')
