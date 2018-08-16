@@ -42,12 +42,12 @@ module TeracyDevEssential
           plugin = plugins[0]
 
           if !TeracyDev::Plugin.installed?(plugin_name)
-            @logger.warn("#{plugin_name} is not installed")
+            @logger.debug("#{plugin_name} is not installed")
             return false
           end
 
           if plugin['enabled'] != true
-            @logger.info("#{plugin_name} is installed but not enabled so its settings is ignored")
+            @logger.debug("#{plugin_name} is installed but not enabled so its settings is ignored")
             return false
           end
           return true
