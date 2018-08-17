@@ -15,7 +15,7 @@ teracy-dev:
       path:
         extension: teracy-dev-essential
       location:
-        git: https://github.com/hoatle/teracy-dev-essential.git
+        git: https://github.com/teracyhq-incubator/teracy-dev-essential.git
         branch: develop
       require_version: ">= 0.1.0-SNAPSHOT"
       enabled: true
