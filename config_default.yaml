@@ -12,7 +12,7 @@ vagrant:
       config_key: gatling
       options:
         latency: 0.5
-        time_format: "%H:%M:%S"
+        time_format: "%%H:%%M:%%S"
         rsync_on_startup: true
     - _id: "essential-1"
       name: vagrant-rsync-back
