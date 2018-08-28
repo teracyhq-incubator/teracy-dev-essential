@@ -1,5 +1,6 @@
 require 'teracy-dev/config/configurator'
 require 'teracy-dev/plugin'
+require 'pp'
 
 module TeracyDevEssential
   module Config
@@ -8,7 +9,8 @@ module TeracyDevEssential
 
       def configure_common(settings, config)
         @plugins = settings['vagrant']['plugins'] ||= []
-        configure_hostmanager(config) if can_proceed?(@plugins, PLUGIN_NAME)
+
+        configure_hostmanager(settings, config) if can_proceed?(@plugins, PLUGIN_NAME)
       end
 
       def configure_node(settings, config)
@@ -31,9 +33,22 @@ module TeracyDevEssential
 
       private
 
+      def get_all_configured_networks(settings)
+        networks = []
+
+        settings['nodes'].each do |node|
+          networks = node['vm']['networks'].each do |network|
+            networks << network
+          end if node['vm']['networks']
+        end
+
+        @logger.debug("networks #{pp(networks)}")
+
+        networks
+      end
+
       # check if plugin is installed and enabled to proceed
       def can_proceed?(plugins, plugin_name)
-
           plugins = plugins.select do |plugin|
             plugin['name'] == plugin_name
           end
@@ -54,24 +69,44 @@ module TeracyDevEssential
       end
 
 
-      def configure_hostmanager(config)
+      def configure_hostmanager(settings, config)
         # conflict potential
         if TeracyDev::Plugin.installed?('vagrant-hostsupdater')
           @logger.warn('conflict potential, recommended: $ vagrant plugin uninstall vagrant-hostsupdater')
         end
 
-        # workaround for :public_network
-        # maybe this will not work with :private_network
-        config.hostmanager.ip_resolver = proc do |vm, resolving_vm|
-          #FIXME: make this work with different network settings instead
-          read_ip_address(vm)
+        networks = get_all_configured_networks(settings)
+
+        # default VM network (127.0.0.1) is at 0 index
+        # we use the latest defined network IP
+        host_ip_index = networks.length
+
+        # if there are no networks defined
+        # init a default private network with dynamic ip
+        if host_ip_index == 0
+          config.vm.network "private_network", type: "dhcp"
+
+          host_ip_index = 1
         end
+
+        config.hostmanager.ip_resolver = proc do |vm, resolving_vm|
+          read_ip_address(vm, host_ip_index)
+        end
+
+        extension_lookup_path = TeracyDev::Util.extension_lookup_path(settings, 'teracy-dev-essential')
+
+        config.vm.provision "shell",
+          run: "always",
+          args: [host_ip_index],
+          path: "#{extension_lookup_path}/teracy-dev-essential/provisioners/shell/set_ip.sh",
+          name: "Export IP index"
       end
 
-
       # thanks to https://github.com/devopsgroup-io/vagrant-hostmanager/issues/121#issuecomment-69050265
-      def read_ip_address(machine)
-        command = "LANG=en ifconfig  | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2 | awk '{ print $1 }'"
+      def read_ip_address(machine, host_ip_index)
+        # command = "LANG=en ifconfig  | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2 | awk '{ print $1 }'"
+        command = "hostname -I  | cut -d ' ' -f #{host_ip_index+1}"
+
         result  = ""
 
         @logger.debug("_read_ip_address: #{machine.name}... ")
@@ -86,8 +121,8 @@ module TeracyDevEssential
           result = "# NOT-UP"
           @logger.warn("_read_ip_address: #{machine.name}... not running")
         end
-        # the second inet is more accurate
-        result.chomp.split("\n").last
+
+        result.strip
       end
     end
   end

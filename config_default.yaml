@@ -1,0 +1,31 @@
+
+# vagrant related settings
+vagrant:
+  # vagrant plugins are actually rubygems so you can declare to use any rubygems
+  # common config level
+  plugins:
+    - _id: "essential-0"
+      name: vagrant-gatling-rsync
+      version: "" # empty means latest by default
+      state: installed # uninstalled
+      enabled: false
+      config_key: gatling
+      options:
+        latency: 0.5
+        time_format: "%%H:%%M:%%S"
+        rsync_on_startup: true
+    - _id: "essential-1"
+      name: vagrant-rsync-back
+      version: ""
+      state: installed
+      enabled: false
+    - _id: "essential-2"
+      name: vagrant-hostmanager
+      version: ""
+      state: installed
+      config_key: hostmanager
+      enabled: false
+      options:
+        enabled: true
+        manage_host: true
+        manage_guest: true
