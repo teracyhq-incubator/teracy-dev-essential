@@ -16,18 +16,18 @@ module TeracyDevEssential
       private
       def configure_networks(node_id, hostname, networks_settings, config)
         networks_settings ||= []
-        @logger.debug("configure_networks: #{networks_settings}")
+        @logger.debug("networks_settings: #{networks_settings}")
         networks_settings.each do |vm_network|
           options = {}
           network_type = vm_network['type'] || vm_network['mode']
 
-          if network_type == 'public_network' and !TeracyDev::Util.exist? vm_network['bridge']
+          if network_type == 'public_network'
             network_id = vm_network['_id']
             id = "#{node_id}-#{network_type}-#{network_id}"
             options[:id] = id
 
             mac_file = File.join(TeracyDev::BASE_DIR, '/.vagrant/.' + id + '-public_mac_address')
-            if vm_network['reuse_mac_address']
+            if TeracyDev::Util.boolean(vm_network['reuse_mac_address']) == true
               if File.exist?(mac_file)
                 options[:mac] = File.read(mac_file).gsub(/[\s:\n]/,'')
               else
