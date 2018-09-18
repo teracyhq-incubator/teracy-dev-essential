@@ -9,6 +9,8 @@ module TeracyDevEssential
       def configure_common(settings, config)
         @plugins = settings['vagrant']['plugins'] ||= []
 
+        # get all eth networks
+        # then get the latest ip
         @host_ip_command = "ip addr | grep eth | grep inet | cut -d/ -f1 | tail -1 | sed -e 's/^[ \t]*//' | cut -d' ' -f2"
 
         configure_ip_display(config, settings)
