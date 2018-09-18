@@ -1,6 +1,5 @@
 require 'teracy-dev/config/configurator'
 require 'teracy-dev/plugin'
-require 'pp'
 
 module TeracyDevEssential
   module Config
@@ -10,9 +9,11 @@ module TeracyDevEssential
       def configure_common(settings, config)
         @plugins = settings['vagrant']['plugins'] ||= []
 
-        host_ip_index = configure_ip_display(config, settings)
+        @host_ip_command = "ip addr | grep eth | grep inet | cut -d/ -f1 | tail -1 | sed -e 's/^[ \t]*//' | cut -d' ' -f2"
 
-        configure_hostmanager(config, host_ip_index) if can_proceed?(@plugins, PLUGIN_NAME)
+        configure_ip_display(config, settings)
+
+        configure_hostmanager(config) if can_proceed?(@plugins, PLUGIN_NAME)
       end
 
       def configure_node(settings, config)
@@ -38,41 +39,11 @@ module TeracyDevEssential
       def configure_ip_display(config, settings)
         extension_lookup_path = TeracyDev::Util.extension_lookup_path(settings, 'teracy-dev-essential')
 
-        networks = get_all_configured_networks(settings)
-
-        # default VM network (127.0.0.1) is at 0 index
-        # we use the latest defined network IP
-        host_ip_index = networks.length
-
-        # if there are no networks defined
-        # init a default private network with dynamic ip
-        if host_ip_index == 0
-          config.vm.network "private_network", type: "dhcp"
-
-          host_ip_index = 1
-        end
-
         config.vm.provision "shell",
           run: "always",
-          args: [host_ip_index],
+          args: [@host_ip_command],
           path: "#{extension_lookup_path}/teracy-dev-essential/provisioners/shell/ip_display.sh",
           name: "Display IP"
-
-        host_ip_index
-      end
-
-      def get_all_configured_networks(settings)
-        networks = []
-
-        settings['nodes'].each do |node|
-          networks = node['vm']['networks'].each do |network|
-            networks << network
-          end if node['vm']['networks']
-        end
-
-        @logger.debug("networks #{pp(networks)}")
-
-        networks
       end
 
       # check if plugin is installed and enabled to proceed
@@ -97,21 +68,21 @@ module TeracyDevEssential
       end
 
 
-      def configure_hostmanager(config, host_ip_index)
+      def configure_hostmanager(config)
         # conflict potential
         if TeracyDev::Plugin.installed?('vagrant-hostsupdater')
           @logger.warn('conflict potential, recommended: $ vagrant plugin uninstall vagrant-hostsupdater')
         end
 
         config.hostmanager.ip_resolver = proc do |vm, resolving_vm|
-          read_ip_address(vm, host_ip_index)
+          read_ip_address(vm)
         end
       end
 
       # thanks to https://github.com/devopsgroup-io/vagrant-hostmanager/issues/121#issuecomment-69050265
-      def read_ip_address(machine, host_ip_index)
+      def read_ip_address(machine)
         # command = "LANG=en ifconfig  | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2 | awk '{ print $1 }'"
-        command = "hostname -I  | cut -d ' ' -f #{host_ip_index+1}"
+        # command = "hostname -I  | cut -d ' ' -f #{host_ip_index+1}"
 
         result  = ""
 
@@ -119,7 +90,7 @@ module TeracyDevEssential
 
         begin
           # sudo is needed for ifconfig
-          machine.communicate.sudo(command) do |type, data|
+          machine.communicate.sudo(@host_ip_command) do |type, data|
             result << data if type == :stdout
           end
           @logger.debug("_read_ip_address: #{machine.name}... success")
