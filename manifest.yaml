@@ -1,4 +1,4 @@
 name: teracy-dev-essential
 version: "0.1.0-SNAPSHOT"
 description: teracy-dev extension essential for dev
-target: ">= 0.6.0-a3, < 0.7.0"
+target: ">= 0.6.0-a4, < 0.7.0"
