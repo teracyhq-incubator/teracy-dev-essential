@@ -11,6 +11,9 @@ module TeracyDevEssential
 
         # get all eth networks or enp0s in some system version
         # then get the latest ip
+        # TODO(hoatle):
+        # - don't use hard-code interface names: https://github.com/teracyhq-incubator/teracy-dev-essential/issues/21
+        # - select explictly by users or implictly by public > private > internal: https://github.com/teracyhq-incubator/teracy-dev-essential/issues/20
         @host_ip_command = "ip addr | grep -e eth -e enp | grep inet | cut -d/ -f1 | tail -1 | sed -e 's/^[ \t]*//' | cut -d' ' -f2"
 
         configure_ip_display(config, settings)
@@ -81,24 +84,21 @@ module TeracyDevEssential
         end
       end
 
-      # thanks to https://github.com/devopsgroup-io/vagrant-hostmanager/issues/121#issuecomment-69050265
       def read_ip_address(machine)
-        # command = "LANG=en ifconfig  | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2 | awk '{ print $1 }'"
-        # command = "hostname -I  | cut -d ' ' -f #{host_ip_index+1}"
 
         result  = ""
 
-        @logger.debug("_read_ip_address: #{machine.name}... ")
+        @logger.debug("machine.name: #{machine.name}... ")
 
         begin
           # sudo is needed for ifconfig
           machine.communicate.sudo(@host_ip_command) do |type, data|
             result << data if type == :stdout
           end
-          @logger.debug("_read_ip_address: #{machine.name}... success")
+          @logger.debug("machine.name: #{machine.name}... success")
         rescue
           result = "# NOT-UP"
-          @logger.warn("_read_ip_address: #{machine.name}... not running")
+          @logger.warn("machine.name: #{machine.name}... not running")
         end
 
         result.strip
