@@ -8,6 +8,38 @@ features for dev workstation.
 
 Configure `workspace/teracy-dev-entry/config_default.yaml` with the following similar content:
 
+- Use specific version:
+
+```yaml
+teracy-dev:
+  extensions:
+    - _id: "entry-0"
+      path:
+        extension: teracy-dev-essential
+      location:
+        git: https://github.com/teracyhq-incubator/teracy-dev-essential.git
+        branch: v0.1.0
+      require_version: ">= 0.1.0"
+      enabled: true
+```
+
+- Use latest stable version (auto update):
+
+```yaml
+teracy-dev:
+  extensions:
+    - _id: "entry-0"
+      path:
+        extension: teracy-dev-essential
+      location:
+        git: https://github.com/teracyhq-incubator/teracy-dev-essential.git
+        branch: master
+      require_version: ">= 0.1.0"
+      enabled: true
+```
+
+- Use latest develop version (auto update):
+
 ```yaml
 teracy-dev:
   extensions:
@@ -17,25 +49,25 @@ teracy-dev:
       location:
         git: https://github.com/teracyhq-incubator/teracy-dev-essential.git
         branch: develop
-      require_version: ">= 0.1.0-SNAPSHOT"
+      require_version: ">= 0.1.0"
       enabled: true
 ```
 
 
 ## How to develop
 
-Configure `workspace/teracy-dev-entry/config_override.yaml` with the follow similar content:
+You should configure the forked git repo into the `workspace` directory by adding the following
+similar content into `workspace/teracy-dev-entry/config_override.yaml`:
 
 
 ```yaml
 teracy-dev:
   extensions:
-    - _id: "entry-0"
+    - _id: "entry-0" # must match the _id configured from the config_default.yaml file
       path:
         lookup: workspace # use workspace directory to lookup for this extension
       location:
         git: git@github.com:hoatle/teracy-dev-essential.git # your forked repo
+        branch: develop
+      require_version: ">= 0.2.0-SNAPSHOT"
 ```
-
-With this override configuration, you tells `teracy-dev` to use the `teracy-dev-essential` extension
-from the `workspace` directory
