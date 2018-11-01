@@ -9,6 +9,12 @@ module TeracyDevEssential
       def configure_common(settings, config)
         @plugins = settings['vagrant']['plugins'] ||= []
 
+        plugin = @plugins.find { |p| p['name'] == PLUGIN_NAME }
+
+        @plugin_aliases = []
+
+        @plugin_aliases = plugin['options']['aliases'] if plugin
+
         # get all eth networks or enp0s in some system version
         # then get the latest ip
         # TODO(hoatle):
@@ -37,9 +43,42 @@ module TeracyDevEssential
           provision.set_options(options)
         end
 
+        @plugin_aliases.unshift hostname
+
+        check_conflict_hostname @plugin_aliases
       end
 
       private
+
+      def check_conflict_hostname aliases
+        @logger.debug('check conflict hostname')
+
+        etc_hosts = `cat /etc/hosts`
+
+        if !$?.success?
+          @logger.warn('Reading /etc/hosts with no success, aborted')
+
+          return false
+        end
+
+        conflict_list = []
+        
+        hex = "[0-9a-fA-F]+"
+        sign = "\.?\:?"
+        ip = "#{hex}#{sign}#{hex}#{sign}#{hex}#{sign}#{hex}#{sign}#{hex}#{sign}#{hex}#{sign}#{hex}#{sign}#{hex}"
+        
+        aliases.each do |host|
+          found = etc_hosts.scan(Regexp.new("#{ip}.*#{host}", 'm'))
+
+          if found and found.length > 1
+            conflict_list << found.map { |x| x.to_s.gsub(/\t/, ' ') }
+          end
+        end
+
+        if conflict_list.length > 0
+          @logger.warn("#{conflict_list} are conflicted with each other, maybe you haven't clean the old VM setup, you can resolve this by go to the old setup repo then run: 'vagrant destroy' or 'vagrant halt && vagrant hostmanager' or you can open '/etc/hosts' and clean it manually.")
+        end
+      end
 
       def configure_ip_display(config, settings)
         extension_lookup_path = TeracyDev::Util.extension_lookup_path(settings, 'teracy-dev-essential')
