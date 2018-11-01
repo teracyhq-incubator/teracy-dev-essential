@@ -53,7 +53,13 @@ module TeracyDevEssential
       def check_conflict_hostname aliases
         @logger.debug('check conflict hostname')
 
-        etc_hosts = `cat /etc/hosts`
+        if Vagrant::Util::Platform.windows?
+          etc_hosts = `type C:\\Windows\\System32\\drivers\\etc\\hosts`
+        else
+          etc_hosts = `cat /etc/hosts`
+        end
+
+        @logger.debug("etc_hosts: #{etc_hosts}")
 
         if !$?.success?
           @logger.warn('Reading /etc/hosts with no success, aborted')
