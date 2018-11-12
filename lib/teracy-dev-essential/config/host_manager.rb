@@ -9,11 +9,9 @@ module TeracyDevEssential
       def configure_common(settings, config)
         @plugins = settings['vagrant']['plugins'] ||= []
 
-        plugin = @plugins.find { |p| p['name'] == PLUGIN_NAME }
+        plugin_aliases = get_aliases @plugins
 
-        @plugin_aliases = []
-
-        @plugin_aliases = plugin['options']['aliases'] if plugin
+        check_conflict_hostname plugin_aliases
 
         # get all eth networks or enp0s in some system version
         # then get the latest ip
@@ -29,9 +27,18 @@ module TeracyDevEssential
 
       def configure_node(settings, config)
         return if !can_proceed?(@plugins, PLUGIN_NAME)
-        # guest hosts fixer
+        
         hostname = settings['vm']['hostname']
+
         return if hostname.nil? || hostname.empty?
+
+        plugin_aliases = get_aliases settings['plugins']
+
+        plugin_aliases.unshift hostname
+
+        check_conflict_hostname plugin_aliases
+
+        # guest hosts fixer
         fix_hosts_command = "sed -i \"s/\\(127.0.1.1\\)\\(.*\\)#{hostname}\\(.*\\)/\\1\\3/\" /etc/hosts"
         @logger.debug("fix_hosts_command: #{fix_hosts_command}")
 
@@ -42,30 +49,50 @@ module TeracyDevEssential
         config.vm.provision "guest-hosts-fixer", type: "shell" do |provision|
           provision.set_options(options)
         end
-
-        @plugin_aliases.unshift hostname
-
-        check_conflict_hostname @plugin_aliases
       end
 
       private
 
+      def get_aliases plugins
+        plugin = plugins.find { |p| p['name'] == PLUGIN_NAME }
+
+        return [] if plugin.nil?
+
+        if plugin['options'] && plugin['options']['aliases']
+          plugin_aliases = plugin['options']['aliases']
+        end
+
+        plugin_aliases ||= []
+      end
+
+      def get_etc_hosts
+        return @etc_hosts unless @etc_hosts.nil?
+
+        if Vagrant::Util::Platform.windows?
+          @etc_hosts = `type C:\\Windows\\System32\\drivers\\etc\\hosts`
+        else
+          @etc_hosts = `cat /etc/hosts`
+        end
+
+        if !$?.success?
+          return nil
+        end
+
+        @etc_hosts
+      end
+
       def check_conflict_hostname aliases
         @logger.debug('check conflict hostname')
 
-        if Vagrant::Util::Platform.windows?
-          etc_hosts = `type C:\\Windows\\System32\\drivers\\etc\\hosts`
-        else
-          etc_hosts = `cat /etc/hosts`
-        end
+        etc_hosts = get_etc_hosts
 
-        @logger.debug("etc_hosts: #{etc_hosts}")
-
-        if !$?.success?
+        if etc_hosts.nil?
           @logger.warn('Reading /etc/hosts with no success, aborted')
 
           return false
         end
+
+        @logger.debug("etc_hosts: #{etc_hosts}")
 
         conflict_list = []
         
@@ -74,7 +101,7 @@ module TeracyDevEssential
         ip = "#{hex}#{sign}#{hex}#{sign}#{hex}#{sign}#{hex}#{sign}#{hex}#{sign}#{hex}#{sign}#{hex}#{sign}#{hex}"
         
         aliases.each do |host|
-          found = etc_hosts.scan(Regexp.new("#{ip}.*#{host}", 'm'))
+          found = etc_hosts.scan(Regexp.new("#{ip}.*#{host}"))
 
           if found and found.length > 1
             conflict_list << found.map { |x| x.to_s.gsub(/\t/, ' ') }
