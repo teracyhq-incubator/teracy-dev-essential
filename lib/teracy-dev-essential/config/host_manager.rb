@@ -98,10 +98,10 @@ module TeracyDevEssential
         
         hex = "[0-9a-fA-F]+"
         sign = "\.?\:?"
-        ip = "#{hex}#{sign}#{hex}#{sign}#{hex}#{sign}#{hex}#{sign}#{hex}#{sign}#{hex}#{sign}#{hex}#{sign}#{hex}"
+        ip = "#{hex}#{sign}#{hex}#{sign}#{hex}#{sign}#{hex}"
         
         aliases.each do |host|
-          found = etc_hosts.scan(Regexp.new("#{ip}.*#{host}"))
+          found = etc_hosts.scan(Regexp.new("^#{ip}.*#{host}"))
 
           if found and found.length > 1
             conflict_list << found.map { |x| x.to_s.gsub(/\t/, ' ') }
