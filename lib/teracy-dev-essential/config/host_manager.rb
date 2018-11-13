@@ -109,7 +109,10 @@ module TeracyDevEssential
         end
 
         if conflict_list.length > 0
-          @logger.warn("#{conflict_list} are conflicted with each other, maybe you haven't clean the old VM setup, you can resolve this by go to the old setup repo then run: 'vagrant destroy' or 'vagrant halt && vagrant hostmanager' or you can open '/etc/hosts' and clean it manually.")
+          @logger.warn("#{conflict_list} are conflicted with each other,"\
+            " maybe you haven't clean the old VM setup, you can resolve this by go to the old setup"\
+            " repo then run: 'vagrant destroy' or 'vagrant halt && vagrant hostmanager' or you can"\
+            " open '/etc/hosts' and clean it manually.")
         end
       end
 
