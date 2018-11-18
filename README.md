@@ -17,8 +17,10 @@ teracy-dev:
       path:
         extension: teracy-dev-essential
       location:
-        git: https://github.com/teracyhq-incubator/teracy-dev-essential.git
-        branch: v0.1.0
+        git:
+          remote:
+            origin: https://github.com/teracyhq-incubator/teracy-dev-essential.git
+          branch: v0.1.0
       require_version: ">= 0.1.0"
       enabled: true
 ```
@@ -32,8 +34,10 @@ teracy-dev:
       path:
         extension: teracy-dev-essential
       location:
-        git: https://github.com/teracyhq-incubator/teracy-dev-essential.git
-        branch: master
+        git:
+          remote:
+            origin: https://github.com/teracyhq-incubator/teracy-dev-essential.git
+          branch: master
       require_version: ">= 0.1.0"
       enabled: true
 ```
@@ -47,8 +51,10 @@ teracy-dev:
       path:
         extension: teracy-dev-essential
       location:
-        git: https://github.com/teracyhq-incubator/teracy-dev-essential.git
-        branch: develop
+        git:
+          remote:
+            origin: https://github.com/teracyhq-incubator/teracy-dev-essential.git
+          branch: develop
       require_version: ">= 0.1.0"
       enabled: true
 ```
@@ -67,7 +73,9 @@ teracy-dev:
       path:
         lookup: workspace # use workspace directory to lookup for this extension
       location:
-        git: git@github.com:hoatle/teracy-dev-essential.git # your forked repo
-        branch: develop
+        git:
+          remote:
+            origin: git@github.com:hoatle/teracy-dev-essential.git # your forked repo
+          branch: develop
       require_version: ">= 0.2.0-SNAPSHOT"
 ```
