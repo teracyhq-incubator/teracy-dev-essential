@@ -136,7 +136,7 @@ module TeracyDevEssential
       #         primary: true # <-- priority this over public_network
       #       ...
       #  }
-      # Other wise it will follow this order: public_network > private_network
+      # Otherwise it will follow this order: public_network > private_network
       def configure_ip_display(config, settings)
         networks = settings['vm']['networks']
 
@@ -148,7 +148,7 @@ module TeracyDevEssential
         primary_network = networks.find { |net| TeracyDev::Util.true? net['primary'] }
 
         # or prefer network by order: public > private
-        ['public_network', 'private_network'].each_with_index do |network, index|
+        ['public_network', 'private_network'].each do |network|
           primary_network = networks.find { |net| net['type'] == network }
 
           break if !primary_network.nil?
