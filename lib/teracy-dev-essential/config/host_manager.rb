@@ -13,12 +13,14 @@ module TeracyDevEssential
 
         check_conflict_hostname plugin_aliases
 
-        # get all eth networks or enp0s in some system version
-        # then get the latest ip
-        # TODO(hoatle):
-        # - don't use hard-code interface names: https://github.com/teracyhq-incubator/teracy-dev-essential/issues/21
-        # - select explictly by users or implictly by public > private > internal: https://github.com/teracyhq-incubator/teracy-dev-essential/issues/20
-        @host_ip_command = "ip addr | grep -e eth -e enp | grep inet | cut -d/ -f1 | tail -1 | sed -e 's/^[ \t]*//' | cut -d' ' -f2"
+        # TODO: select explictly by users or implictly by public > private > internal: https://github.com/teracyhq-incubator/teracy-dev-essential/issues/20
+
+        # Get all system networks then get the latest ip:
+        # 1. Get network interface names: ls -la /sys/class/net/
+        # - if not present then fallback to default net name: eth enp
+        # 2. Process net name: eth0 eth1 -> eth0 -e eth1
+        # 3. Get ip address: ip addr | grep -e eth0 -e eth1
+        @host_ip_command = "net_name=`ls -la /sys/class/net/ | grep -v virtual | grep -o '/net/.*' | cut -d/ -f3`; if [[ -z $net_name ]]; then net_name='eth enp'; fi; net_name_processed=`echo $net_name | sed -e 's/ / \-e /g'`; ip_address=`ip addr | grep -e $net_name_processed | grep inet | cut -d/ -f1 | tail -1 | sed -e 's/^[ \t]*//' | cut -d' ' -f2`; echo $1 $ip_address;"
 
         configure_ip_display(config, settings)
 
@@ -118,8 +120,8 @@ module TeracyDevEssential
 
         config.vm.provision "shell",
           run: "always",
-          args: [@host_ip_command],
-          path: "#{extension_lookup_path}/teracy-dev-essential/provisioners/shell/ip_display.sh",
+          args: ['IP Address: '],
+          inline: @host_ip_command,
           name: "Display IP"
       end
 
@@ -157,7 +159,6 @@ module TeracyDevEssential
       end
 
       def read_ip_address(machine)
-
         result  = ""
 
         @logger.debug("machine.name: #{machine.name}... ")
@@ -172,6 +173,8 @@ module TeracyDevEssential
           result = "# NOT-UP"
           @logger.warn("machine.name: #{machine.name}... not running")
         end
+
+        @logger.debug("result: #{result}")
 
         result.strip
       end
