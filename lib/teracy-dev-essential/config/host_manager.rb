@@ -104,7 +104,20 @@ module TeracyDevEssential
           found = etc_hosts.scan(Regexp.new("^#{ip}.*[\s\t]#{host}"))
 
           if found and found.length > 1
-            conflict_list << found.map { |x| x.to_s.gsub(/\t/, ' ') }
+
+            conflicted_list = {}
+
+            found.map do |x|
+              line = x.to_s.gsub(/\t/, ' ')
+
+              conflicted_list[line.split(' ')[0]] = host
+            end
+
+            found = conflicted_list.map do |key, value|
+                "#{key}  #{value}"
+            end
+
+            conflict_list << found if found.length > 1
           end
         end
 
