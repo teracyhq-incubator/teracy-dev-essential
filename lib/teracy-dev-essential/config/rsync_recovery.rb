@@ -1,24 +1,23 @@
 require 'teracy-dev/config/configurator'
 require 'teracy-dev/plugin'
 
-require 'yaml'
 
 module TeracyDevEssential
   module Config
     class RsyncRecovery < TeracyDev::Config::Configurator
 
       def configure_common(settings, config)
-        if gatling_rsync_installed?
-          config.gatling.rsync_on_startup = false
-        end
-
         # The trigger is only supported by vagrant version >= 2.2.0
         require_version = ">= 2.2.0"
         vagrant_version = Vagrant::VERSION
 
         unless TeracyDev::Util.require_version_valid?(vagrant_version, require_version)
-          @logger.warn("The trigger is only supported by vagrant version `#{require_version}`")
+          @logger.warn("gatling-rsync-auto recovery is only supported by vagrant version `#{require_version}`")
           return
+        end
+
+        if gatling_rsync_installed?
+          config.gatling.rsync_on_startup = false
         end
 
         plugins = settings['vagrant']['plugins'] ||= []
@@ -100,7 +99,7 @@ module TeracyDevEssential
               env.cli('gatling-rsync-auto')
               raise unless $?.exitstatus == 0
             rescue
-              @logger.error('gatling-rsync crashed, retrying...')
+              @logger.warn('gatling-rsync-auto crashed, retrying...')
               retry
             end
           end
