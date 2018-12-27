@@ -13,19 +13,31 @@ module TeracyDevEssential
 
         check_conflict_hostname plugin_aliases
 
-        # get all eth networks or enp0s in some system version
-        # then get the latest ip
-        # TODO(hoatle):
-        # - don't use hard-code interface names: https://github.com/teracyhq-incubator/teracy-dev-essential/issues/21
-        # - select explictly by users or implictly by public > private > internal: https://github.com/teracyhq-incubator/teracy-dev-essential/issues/20
-        @host_ip_command = "ip addr | grep -e eth -e enp | grep inet | cut -d/ -f1 | tail -1 | sed -e 's/^[ \t]*//' | cut -d' ' -f2"
+        # Get all system networks then get the latest ip:
+        # 1. Get network interface names: ls -la /sys/class/net/
+        # - if not present then fallback to default net name: eth enp
+        # 2. Process net name: eth0 eth1 -> eth0 -e eth1
+        # 3. Get ip address: ip addr | grep -e eth0 -e eth1
+        # 4. Get all inet, then filter IP: grep inet | cut -d/ -f1 | sed -e 's/^[ \t]*//' | cut -d' ' -f2
+        @get_ip_list = "net_name=`ls -la /sys/class/net/ | grep -v virtual | grep -o '/net/.*' | cut -d/ -f3`; if [[ -z $net_name ]]; then net_name='eth enp'; fi; net_name_processed=`echo $net_name | sed -e 's/ / \-e /g'`; ip_address_list=`ip addr | grep -e $net_name_processed | grep inet | cut -d/ -f1 | sed -e 's/^[ \t]*//' | cut -d' ' -f2`;"
 
-        configure_ip_display(config, settings)
+
+        # 5. Get IP list and its length: ip_address_length=${#ip_address_arr[@]}
+        # 6. Get IP address at specified index: echo $ip_address_list | cut -d' ' -f ${PRIMARY_NETWORK_INDEX:-$ip_address_length}
+        # - fallback to IP length if index is not specified
+        @host_ip_display_command = "#{@get_ip_list} ip_address_arr=($ip_address_list); ip_address_length=${#ip_address_arr[@]}; ip_address=`echo $ip_address_list | cut -d' ' -f ${PRIMARY_NETWORK_INDEX:-$ip_address_length}`; echo $1 $ip_address;"
+
+        @host_ip_list_display_command = "#{@get_ip_list} echo $ip_address_list;"
+
+        # store ip index for each nodes
+        @host_ip_index = {}
 
         configure_hostmanager(config) if can_proceed?(@plugins, PLUGIN_NAME)
       end
 
       def configure_node(settings, config)
+        configure_ip_display(config, settings)
+
         return if !can_proceed?(@plugins, PLUGIN_NAME)
         
         hostname = settings['vm']['hostname']
@@ -129,13 +141,53 @@ module TeracyDevEssential
         end
       end
 
+      # Set `primary: true` to priority this network, example:
+      #  {
+      #     ...
+      #     networks:
+      #       - _id: "0"
+      #         type: "public_network"
+      #       - _id: "1"
+      #         type: "private_network"
+      #         primary: true # <-- priority this over public_network
+      #       ...
+      #  }
+      # Otherwise it will follow this order: public_network > private_network
       def configure_ip_display(config, settings)
-        extension_lookup_path = TeracyDev::Util.extension_lookup_path(settings, 'teracy-dev-essential')
+        networks = settings['vm']['networks']
+
+        machine_name = settings['name']
+
+        @logger.debug("machine_name: #{machine_name}")
+
+        # prefer primary network
+        primary_network = networks.find { |net| TeracyDev::Util.true? net['primary'] }
+
+        # or prefer network by order: public > private
+        ['public_network', 'private_network'].each do |network|
+          primary_network = networks.find { |net| net['type'] == network }
+
+          break if !primary_network.nil?
+        end if primary_network.nil?
+
+        primary_network_index = -1
+
+        if !primary_network.nil?
+          primary_network_index = networks.index primary_network
+        end
+
+        @logger.debug("primary_network #{primary_network_index}: #{primary_network}")
+
+        @host_ip_index[machine_name] = primary_network_index
 
         config.vm.provision "shell",
           run: "always",
-          args: [@host_ip_command],
-          path: "#{extension_lookup_path}/teracy-dev-essential/provisioners/shell/ip_display.sh",
+          env: {
+            # with ip default at 1 so +1, shell cmd `cut -f` at 1 so +1, total: 2
+            'PRIMARY_NETWORK_INDEX': primary_network_index + 2
+          },
+          args: ['IP Address: '],
+          inline: @host_ip_display_command,
           name: "Display IP"
       end
 
@@ -173,21 +225,30 @@ module TeracyDevEssential
       end
 
       def read_ip_address(machine)
-
         result  = ""
 
         @logger.debug("machine.name: #{machine.name}... ")
 
         begin
           # sudo is needed for ifconfig
-          machine.communicate.sudo(@host_ip_command) do |type, data|
+          machine.communicate.sudo(@host_ip_list_display_command) do |type, data|
             result << data if type == :stdout
           end
+
+          host_ip_index = @host_ip_index[machine.name.to_s]
+
+          # default index at 0, so + 1
+          result = result.split(' ')[host_ip_index + 1]
+
+          @logger.debug("result for #{machine.name} at index #{@host_ip_index[machine.name.to_s]}: #{result}")
+
           @logger.debug("machine.name: #{machine.name}... success")
         rescue
           result = "# NOT-UP"
           @logger.warn("machine.name: #{machine.name}... not running")
         end
+
+        @logger.debug("result: #{result}")
 
         result.strip
       end
