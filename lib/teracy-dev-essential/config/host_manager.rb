@@ -154,7 +154,7 @@ module TeracyDevEssential
       #  }
       # Otherwise it will follow this order: public_network > private_network
       def configure_ip_display(config, settings)
-        networks = settings['vm']['networks']
+        networks = settings['vm']['networks'] || []
 
         machine_name = settings['name']
 
@@ -162,6 +162,7 @@ module TeracyDevEssential
 
         # prefer primary network
         primary_network = networks.find { |net| TeracyDev::Util.true? net['primary'] }
+
 
         # or prefer network by order: public > private
         ['public_network', 'private_network'].each do |network|
