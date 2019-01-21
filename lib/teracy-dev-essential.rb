@@ -11,7 +11,7 @@ module TeracyDevEssential
     TeracyDev.register_configurator(Config::HostManager.new)
     TeracyDev.register_configurator(Config::SaveMacAddress.new)
     TeracyDev.register_configurator(Config::Networks.new)
-    TeracyDev.register_configurator(Config::RsyncRecovery.new)
+    TeracyDev.register_configurator(Config::RsyncRecovery.new, weight = 2)
   end
 
 end
