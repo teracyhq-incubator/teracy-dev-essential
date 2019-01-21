@@ -102,10 +102,10 @@ module TeracyDevEssential
           gatling_plugin_enabled = plugins.select { |item| item['name'] == 'vagrant-gatling-rsync' and TeracyDev::Util.true? item['enabled'] }
 
           if gatling_plugin_enabled.empty?
-            @logger.error("vagrant-gatling-rsync plugin must be enabled, and use 'vagrant up' instead of 'vagrant gatling-rsync-auto")
+            @logger.error("vagrant-gatling-rsync plugin must be enabled, and use 'vagrant up' instead of 'vagrant gatling-rsync-auto'")
             abort
           else
-            @logger.warn("vagrant gatling-rsync-auto' does support rsync recovery, will use 'vagrant up' instead")
+            @logger.warn("'vagrant gatling-rsync-auto' does support rsync recovery, will use 'vagrant up' instead")
 
             exec "vagrant up"
           end
