@@ -115,6 +115,13 @@ module TeracyDevEssential
       def configure_trigger_after(config)
         config.trigger.after :up, :reload, :resume do |trigger|
           trigger.ruby do |env, machine|
+            ready = machine.guest.ready?
+
+            unless ready
+              @logger.error("guest machine is not ready")
+              abort
+            end
+
             begin
               env.cli('gatling-rsync-auto')
               raise unless $?.exitstatus == 0
