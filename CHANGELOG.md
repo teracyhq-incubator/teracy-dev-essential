@@ -1,5 +1,24 @@
 # Change Log
 
+## [v0.3.0][] (2018-01-22)
+
+- Features:
+  + should add support for vagrant-gatling-rsync auto restart when crashed #34
+
+- Improvements:
+  + should not use hard-coded network interface names #21
+  + should select accessible IP address by priority for the vagrant-hostmanager plugin #20
+  + should force '$ vagrant gatling-rsync-auto' to use '$ vagrant up' instead #39
+  + should check guest machine state before run rsync recovery #44
+  + should sync created files from Linux host due to inotify bug for the rsync #40
+
+- Bug Fixes:
+  + should not warn when the same domain alias is duplicated #36
+
+
+Details: https://github.com/teracyhq-incubator/teracy-dev-essential/milestone/3?closed=1
+
+
 ## [v0.2.0][] (2018-12-07)
 
 - Improvements:
@@ -28,3 +47,5 @@ Details: https://github.com/teracyhq-incubator/teracy-dev-essential/milestone/1?
 
 [v0.1.0]: https://github.com/teracyhq-incubator/teracy-dev-essential/milestone/1?closed=1
 [v0.2.0]: https://github.com/teracyhq-incubator/teracy-dev-essential/milestone/2?closed=1
+[v0.3.0]: https://github.com/teracyhq-incubator/teracy-dev-essential/milestone/3?closed=1
+
