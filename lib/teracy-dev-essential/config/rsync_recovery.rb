@@ -20,7 +20,7 @@ module TeracyDevEssential
 
         unless TeracyDev::Util.require_version_valid?(@vagrant_version, ">= 2.2.0")
           @logger.warn("vagrant current version: #{@vagrant_version}")
-          @logger.warn("gatling-rsync-auto recovery is only supported by vagrant version `>= 2.2.0`, please upgrade vagrant version")
+          @logger.warn("rsync auto recovery is only supported by vagrant version `>= 2.2.0`, please upgrade vagrant")
           return
         end
 
@@ -43,7 +43,7 @@ module TeracyDevEssential
             @cmd = 'rsync-auto'
 
           else
-            @logger.warn("please upgrade to vagrant >= 2.2.3 to use vagrant rsync on linux")
+            @logger.warn("a bug related to syncing created files will be fixed by vagrant >= 2.2.3, please upgrade vagrant")
           end
         end
 
