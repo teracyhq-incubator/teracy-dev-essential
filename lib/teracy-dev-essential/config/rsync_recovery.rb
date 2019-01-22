@@ -121,19 +121,36 @@ module TeracyDevEssential
             exec "vagrant up"
           end
         end
+
+        rsync_cmd = ARGV.any? { |s| s.include?('rsync-auto') }
+
+        if rsync_cmd and TeracyDev::Util.require_version_valid?(Vagrant::VERSION, "< 2.2.3")
+          @logger.warn("'vagrant rsync-auto' does support rsync recovery, will use 'vagrant up' instead")
+
+          exec "vagrant up"
+        end
       end
 
       def configure_trigger_after(config)
         config.trigger.after :up, :reload, :resume do |trigger|
           trigger.ruby do |env, machine|
+            ready = machine.guest.ready?
+
+            unless ready
+              @logger.error("guest machine is not ready")
+              abort
+            end
+
             if @cmd == 'rsync-auto'
               env.cli(@cmd)
             else
               begin
                 env.cli(@cmd)
+
                 raise unless $?.exitstatus == 0
               rescue
                 @logger.warn('gatling-rsync-auto crashed, retrying...')
+
                 retry
               end
             end
