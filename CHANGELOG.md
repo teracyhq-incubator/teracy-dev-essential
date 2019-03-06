@@ -1,5 +1,13 @@
 # Change Log
 
+## [v0.4.0][] (2019-03-06)
+
+- Features:
+  + should allow route traffic via public network interface #8
+
+Details: https://github.com/teracyhq-incubator/teracy-dev-essential/milestone/4?closed=1
+
+
 ## [v0.3.0][] (2018-01-22)
 
 - Features:
@@ -48,4 +56,5 @@ Details: https://github.com/teracyhq-incubator/teracy-dev-essential/milestone/1?
 [v0.1.0]: https://github.com/teracyhq-incubator/teracy-dev-essential/milestone/1?closed=1
 [v0.2.0]: https://github.com/teracyhq-incubator/teracy-dev-essential/milestone/2?closed=1
 [v0.3.0]: https://github.com/teracyhq-incubator/teracy-dev-essential/milestone/3?closed=1
+[v0.4.0]: https://github.com/teracyhq-incubator/teracy-dev-essential/milestone/4?closed=1
 
