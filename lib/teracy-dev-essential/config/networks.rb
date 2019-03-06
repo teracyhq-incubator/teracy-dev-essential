@@ -17,14 +17,16 @@ module TeracyDevEssential
         networks_settings ||= []
         @logger.debug("configure_networks: #{networks_settings}")
 
-        public_networks = networks_settings.select{|network| network['type'] == 'public_network'}
-        default_gateway_networks = public_networks.select {|network| network['default_gateway'] == true}
+        public_networks = networks_settings.select{ |network| network['type'] == 'public_network' }
+        default_gateway_networks = public_networks.select { |network| TeracyDev::Util.true?(network['default_gateway']) }
         allow_default_gateway = true
 
         # Precheck for this problem https://robertlathanh.com/2009/08/two-subnetworks-on-one-lan-and-linux-arp_filter/
         if public_networks.length > 1 and default_gateway_networks.length > 0
-          @logger.warn('Ignored default gateway set.')
-          @logger.warn('Use multi public_network and default_gateway at same time could make VM confuse about which interface to connect to internet. Please consider create virtual IP on single public interface instead.')
+          @logger.warn('default_gateway set is ignored')
+          @logger.warn('Use multi public_network and default_gateway at same time could make VM confuse about ' \
+            'which interface to connect to internet. Please consider creating a virtual IP on a single public ' \
+            'interface instead.')
           allow_default_gateway = false
         end
 
@@ -41,7 +43,7 @@ module TeracyDevEssential
             bridge_interface = get_default_nic()
             @logger.debug("configure_networks: bridge_interface: #{bridge_interface}")
 
-            default_gateway_iface = (allow_default_gateway && vm_network['default_gateway']) || false
+            default_gateway_iface = (allow_default_gateway && TeracyDev::Util.true?(vm_network['default_gateway'])) || false
 
             if TeracyDev::Util.exist? bridge_interface
               options = {
