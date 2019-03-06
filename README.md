@@ -20,8 +20,8 @@ teracy-dev:
         git:
           remote:
             origin: https://github.com/teracyhq-incubator/teracy-dev-essential.git
-          branch: v0.3.0
-      require_version: ">= 0.3.0"
+          branch: v0.4.0
+      require_version: ">= 0.4.0"
       enabled: true
 ```
 
@@ -38,7 +38,7 @@ teracy-dev:
           remote:
             origin: https://github.com/teracyhq-incubator/teracy-dev-essential.git
           branch: master
-      require_version: ">= 0.3.0"
+      require_version: ">= 0.4.0"
       enabled: true
 ```
 
@@ -55,7 +55,7 @@ teracy-dev:
           remote:
             origin: https://github.com/teracyhq-incubator/teracy-dev-essential.git
           branch: develop
-      require_version: ">= 0.4.0-SNAPSHOT"
+      require_version: ">= 0.5.0-SNAPSHOT"
       enabled: true
 ```
 
@@ -77,5 +77,5 @@ teracy-dev:
           remote:
             origin: git@github.com:hoatle/teracy-dev-essential.git # your forked repo
           branch: develop
-      require_version: ">= 0.4.0-SNAPSHOT"
+      require_version: ">= 0.5.0-SNAPSHOT"
 ```
