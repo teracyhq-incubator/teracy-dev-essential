@@ -113,7 +113,7 @@ module TeracyDevEssential
         ip = "#{hex}#{sign}#{hex}#{sign}#{hex}#{sign}#{hex}"
         
         aliases.each do |host|
-          found = etc_hosts.scan(Regexp.new("^#{ip}.*[\s\t]#{host}"))
+          found = etc_hosts.scan(Regexp.new("^#{ip}.*[\s\t]#{host}[ \t\r\n\f]"))
 
           if found and found.length > 1
 
