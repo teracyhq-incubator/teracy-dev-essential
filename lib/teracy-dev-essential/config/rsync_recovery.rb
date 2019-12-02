@@ -50,6 +50,12 @@ module TeracyDevEssential
           end
         end
 
+        if TeracyDev::Util.require_version_valid?(@vagrant_version, ">= 2.2.5") and TeracyDev::Util.require_version_valid?(@vagrant_version, "< 2.2.7")
+          @cmd = 'rsync-auto'
+
+          @logger.info("gatling-rsync-auto does not work on vagrant 2.2.5 and 2.2.6, so going to use rsync-auto instead")
+        end
+
         configure_trigger_after(config)
       end
 
