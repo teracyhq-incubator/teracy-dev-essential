@@ -2,6 +2,9 @@ require 'teracy-dev/config/configurator'
 require 'teracy-dev/plugin'
 require 'teracy-dev/util'
 
+class NonZeroExit < StandardError
+end
+
 module TeracyDevEssential
   module Config
     class RsyncRecovery < TeracyDev::Config::Configurator
@@ -147,8 +150,8 @@ module TeracyDevEssential
               begin
                 env.cli(@cmd)
 
-                raise unless $?.exitstatus == 0
-              rescue
+                raise NonZeroExit unless $?.exitstatus == 0
+              rescue NonZeroExit
                 @logger.warn('gatling-rsync-auto crashed, retrying...')
 
                 retry
