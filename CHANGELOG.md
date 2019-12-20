@@ -1,6 +1,17 @@
 # Change Log
 
 
+## [v0.6.0][] (2019-12-20)
+
+- Improvements:
+  + rsync recovery: fix silent error #56
+
+- Bug Fixes:
+  + vagrant-gatling-rsync does not work on vagrant 2.2.5 and 2.2.6 #57
+
+Details: https://github.com/teracyhq-incubator/teracy-dev-essential/milestone/6?closed=1
+
+
 ## [v0.5.0][] (2019-05-17)
 
 - Bug Fixes:
@@ -67,4 +78,5 @@ Details: https://github.com/teracyhq-incubator/teracy-dev-essential/milestone/1?
 [v0.3.0]: https://github.com/teracyhq-incubator/teracy-dev-essential/milestone/3?closed=1
 [v0.4.0]: https://github.com/teracyhq-incubator/teracy-dev-essential/milestone/4?closed=1
 [v0.5.0]: https://github.com/teracyhq-incubator/teracy-dev-essential/milestone/5?closed=1
+[v0.6.0]: https://github.com/teracyhq-incubator/teracy-dev-essential/milestone/6?closed=1
 
