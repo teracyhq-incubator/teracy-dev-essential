@@ -1,6 +1,14 @@
 # Change Log
 
 
+## [v0.7.0][] (2020-02-05)
+
+- Bug Fixes:
+  + should force to use rsync-auto on vagrant >= 2.2.5 #61
+
+Details: https://github.com/teracyhq-incubator/teracy-dev-essential/milestone/7?closed=1
+
+
 ## [v0.6.0][] (2019-12-20)
 
 - Improvements:
@@ -79,4 +87,5 @@ Details: https://github.com/teracyhq-incubator/teracy-dev-essential/milestone/1?
 [v0.4.0]: https://github.com/teracyhq-incubator/teracy-dev-essential/milestone/4?closed=1
 [v0.5.0]: https://github.com/teracyhq-incubator/teracy-dev-essential/milestone/5?closed=1
 [v0.6.0]: https://github.com/teracyhq-incubator/teracy-dev-essential/milestone/6?closed=1
+[v0.7.0]: https://github.com/teracyhq-incubator/teracy-dev-essential/milestone/7?closed=1
 
