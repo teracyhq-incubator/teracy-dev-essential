@@ -251,7 +251,8 @@ module TeracyDevEssential
 
         @logger.debug("result: #{result}")
 
-        result.strip
+        # fix error: config/host_manager.rb:253:in `read_ip_address': undefined method `strip' for nil (NoMethodError)
+        (result || "").strip
       end
     end
   end
