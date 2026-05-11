@@ -1,5 +1,13 @@
 # Change Log
 
+## [v0.8.0][] (2026-05-11)
+
+- Bug Fixes:
+  + should fix error: config/host_manager.rb:253:in read_ip_address': undefined method strip' for nil (NoMethodError) #65
+
+
+Details: https://github.com/teracyhq-incubator/teracy-dev-essential/milestone/8?closed=1
+
 
 ## [v0.7.0][] (2020-02-05)
 
@@ -88,4 +96,4 @@ Details: https://github.com/teracyhq-incubator/teracy-dev-essential/milestone/1?
 [v0.5.0]: https://github.com/teracyhq-incubator/teracy-dev-essential/milestone/5?closed=1
 [v0.6.0]: https://github.com/teracyhq-incubator/teracy-dev-essential/milestone/6?closed=1
 [v0.7.0]: https://github.com/teracyhq-incubator/teracy-dev-essential/milestone/7?closed=1
-
+[v0.8.0]: https://github.com/teracyhq-incubator/teracy-dev-essential/milestone/8?closed=1
